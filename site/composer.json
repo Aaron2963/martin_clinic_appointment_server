@@ -1,0 +1,22 @@
+{
+    "name": "aaron/martin_clinic_appointment_server",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Aaron2963",
+            "email": "neotgrr@gmail.com"
+        }
+    ],
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "git@github.com:dearsoft-com/dbsmod.git"
+        }
+    ],
+    "require": {
+        "dearsoft-com/dbsmod": "^2.3",
+        "vlucas/phpdotenv": "^5.5",
+        "firebase/php-jwt": "^6.8",
+        "aaron-lin/app-php": "^0.3.2"
+    }
+}
