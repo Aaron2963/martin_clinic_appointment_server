@@ -61,3 +61,7 @@ $RoleID_Array = [
 
 //抵禦XSS及Injection攻擊
 M\Utility::HandleRequestData();
+
+//JWT簽署金鑰位置
+$JWT_SECRET = $ConfigPath->JSONPath . '/jwtRS256.key';
+$JWT_PUBLIC = $ConfigPath->JSONPath . '/jwtRS256.key.pub';
