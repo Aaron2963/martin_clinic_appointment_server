@@ -4,7 +4,7 @@ namespace App\Model;
 
 trait DataTransferObject
 {
-    static function fromJson(string $json): static
+    static function fromJson(string $json)
     {
         $obj = json_decode($json, true);
         $class = get_called_class();
@@ -12,10 +12,16 @@ trait DataTransferObject
         return $instance;
     }
 
-    static function fromArray(array $array): static
+    static function fromArray(array $array)
     {
         $class = get_called_class();
-        $instance = new $class($array);
+        $data = [];
+        foreach ($array as $key => $value) {
+            $key = lcfirst($key);
+            $key = str_replace('ID', 'Id', $key);
+            $data[$key] = $value;
+        }
+        $instance = new $class($data);
         return $instance;
     }
 
