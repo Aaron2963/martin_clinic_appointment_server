@@ -8,12 +8,22 @@ foreach (glob(__DIR__ . "/../lib/model/*.php") as $filename) {
     require_once $filename;
 }
 
-$json = json_encode([
-    'userId' => '123',
-    'loginName' => 'test',
-    'fullName' => 'Foo Bar'
-]);
+$arr = [
+    'clinicId' => '123',
+    'name' => 'test',
+    'departments' => [
+        [
+            'departmentId' => '456',
+            'name' => 'test2',
+        ],
+        [
+            'departmentId' => '789',
+            'name' => 'test3',
+        ],
+    ],
+];
+$json = json_encode($arr);
 
-$user = User::fromJson($json);
-echo $user->toJson();
+$user = Clinic::fromJson($json);
+var_dump($user->toJson());
 exit(0);

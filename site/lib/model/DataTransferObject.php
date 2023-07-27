@@ -12,8 +12,20 @@ trait DataTransferObject
         return $instance;
     }
 
+    static function fromArray(array $array): static
+    {
+        $class = get_called_class();
+        $instance = new $class($array);
+        return $instance;
+    }
+
     public function toJson(): string
     {
         return json_encode($this);
+    }
+
+    public function toArray(): array
+    {
+        return (array) $this;
     }
 }
