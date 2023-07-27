@@ -1,0 +1,35 @@
+version: '3.1'
+
+name: martin-appt-server
+services:
+  db:
+    container_name: martin-appt-server-db
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: misa_database
+      MYSQL_USER: misa
+      MYSQL_PASSWORD: misa
+
+  phpmyadmin:
+    container_name: martin-appt-server-phpmyadmin
+    image: phpmyadmin:latest
+    ports:
+      - 8080:80
+    environment:
+      PMA_ARBITRARY: 1
+
+  web:
+    container_name: martin-appt-server-web
+    build: 
+      context: .
+    volumes:
+      - .:/var/www/
+    env_file:
+      - image.env
+    ports:
+      - 80:80
+    depends_on:
+      - db
+    links:
+      - db

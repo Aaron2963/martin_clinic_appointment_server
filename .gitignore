@@ -2,3 +2,4 @@ data/
 site/vendor
 site/settings/.env
 site/composer.lock
+image.env
