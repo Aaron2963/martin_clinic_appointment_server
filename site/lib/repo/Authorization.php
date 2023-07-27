@@ -11,6 +11,6 @@ class Authorization implements AuthorizationInterface
     {
         global $Link, $DB_TABLE, $JWT_PUBLIC;
         $Mod = new DBSMOD_OAuthToken($Link, $DB_TABLE);
-        return $Mod->CheckToken($Token, $JWT_PUBLIC);
+        return $Mod->CheckToken($Token, $JWT_PUBLIC) !== false;
     }
 }
