@@ -30,6 +30,10 @@ class PatientDetail extends Patient
         $this->emergencyContacts = [];
         $this->nationalId = $data['nationalId'];
         $this->tel = $data['tel'];
+        $data['mobile'] = str_replace(['-', ' '], '', $data['mobile']);
+        if (!preg_match('/^09\d{8}$/', $data['mobile'])) {
+            throw new \Exception('Invalid mobile number, must be 09xxxxxxxx');
+        }
         $this->mobile = $data['mobile'];
         $this->email = $data['email'];
         $this->address = $data['address'];
@@ -69,7 +73,6 @@ class PatientDetail extends Patient
             'nationalId' => 'IDTNO',
             'tel' => 'TEL1',
             'mobile' => 'MobileTEL1',
-            'mobile' => 'LoginName',
             'email' => 'EML1',
             'address' => 'StreetADR',
             'bloodType' => 'BloodTYP',
@@ -90,6 +93,9 @@ class PatientDetail extends Patient
         }
         if (array_key_exists('Weight', $data) && $this->weight != null) {
             $data['Weight'] = $this->weight;
+        }
+        if (array_key_exists('MobileTEL1', $data)) {
+            $data['LoginName'] = $data['MobileTEL1'];
         }
         return $data;
     }
