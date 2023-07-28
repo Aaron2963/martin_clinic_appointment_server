@@ -23,11 +23,15 @@ class Patient
         } else {
             $this->gender = 'other';
         }
-        $date = new DateTime($data['birthday']);
-        if ($date === false) {
+        try {
+            $date = new DateTime($data['birthday']);
+            if ($date === false) {
+                $this->birthday = null;
+            } else {
+                $this->birthday = $date->format('Y-m-d');
+            }
+        } catch (\Throwable $th) {
             $this->birthday = null;
-        } else {
-            $this->birthday = $date->format('Y-m-d');
         }
     }
 }

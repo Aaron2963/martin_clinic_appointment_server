@@ -37,9 +37,9 @@ class PatientDetail extends Patient
         if (in_array($this->bloodType, ['A', 'B', 'AB', 'O']) === false) {
             $this->bloodType = 'unknown';
         }
-        if ($data['married'] === true) {
+        if ($data['married'] === true || $data['married'] === 'true' || $data['married'] === '1') {
             $this->married = true;
-        } else if ($data['married'] === false) {
+        } else if ($data['married'] === false || $data['married'] === 'false' || $data['married'] === '0') {
             $this->married = false;
         } else {
             $this->married = null;
@@ -54,8 +54,52 @@ class PatientDetail extends Patient
         }
         if (is_array($data['emergencyContacts'])) {
             foreach ($data['emergencyContacts'] as $contact) {
-                $this->emergencyContacts[] = new Contact($contact);
+                $this->emergencyContacts[] = Contact::fromArray($contact);
             }
         }
+    }
+
+    public function toDBArray(array $fields = ['patientId', 'fullName', 'gender', 'birthday', 'nationalId', 'tel', 'mobile', 'mobile', 'email', 'address', 'bloodType', 'emergencyContacts']) : array
+    {
+        $mapping = [
+            'patientId' => 'UserID',
+            'fullName' => 'FullName',
+            'gender' => 'Gender',
+            'birthday' => 'Birthday',
+            'nationalId' => 'IDTNO',
+            'tel' => 'TEL1',
+            'mobile' => 'MobileTEL1',
+            'mobile' => 'LoginName',
+            'email' => 'EML1',
+            'address' => 'StreetADR',
+            'bloodType' => 'BloodTYP',
+        ];
+        $data = [];
+        foreach ($fields as $field) {
+            if (isset($mapping[$field])) {
+                $data[$mapping[$field]] = $this->$field;
+            } else if ($field === 'emergencyContacts') {
+                $data['ContactSet'] = json_encode($this->emergencyContacts);
+            }
+        }
+        if (array_key_exists('Marriage', $data) && $this->married != null) {
+            $data['Marriage'] = $this->married ? 1 : 0;
+        }
+        if (array_key_exists('Height', $data) && $this->height != null) {
+            $data['Height'] = $this->height;
+        }
+        if (array_key_exists('Weight', $data) && $this->weight != null) {
+            $data['Weight'] = $this->weight;
+        }
+        return $data;
+    }
+
+    public function toArray(): array
+    {
+        $data = parent::toArray();
+        $data['emergencyContacts'] = array_map(function ($contact) {
+            return $contact->toArray();
+        }, $this->emergencyContacts);
+        return $data;
     }
 }

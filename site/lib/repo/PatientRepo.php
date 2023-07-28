@@ -7,6 +7,8 @@ use Lin\AppPhp\Server\RestfulApp;
 use App\Model\Patient;
 use App\Model\PatientDetail;
 use MISA\DBSMOD\DBSAction;
+use MISA\DBSMOD\DBSMOD_User;
+use MISA\DBSMOD\Utility;
 
 class PatientRepo extends RestfulApp
 {
@@ -20,16 +22,103 @@ class PatientRepo extends RestfulApp
         if (empty($Data['_id'])) {
             $List = $this->QueryList($Data);
             $ResponseBody = $this->Psr17Factory->createStream(json_encode($List));
-            return $this->Psr17Factory->createResponse(200)->withBody($ResponseBody)->withHeader('Content-Type', 'application/json');
+            return $this->Psr17Factory->createResponse(200)->withBody($ResponseBody)
+                ->withHeader('Content-Type', 'application/json');
         } else {
             $Patient = $this->QueryDetail($Data['_id']);
             if ($Patient === null) {
                 return $this->Psr17Factory->createResponse(404);
             }
             $ResponseBody = $this->Psr17Factory->createStream(json_encode($Patient));
-            return $this->Psr17Factory->createResponse(200)->withBody($ResponseBody)->withHeader('Content-Type', 'application/json');
+            return $this->Psr17Factory->createResponse(200)->withBody($ResponseBody)
+                ->withHeader('Content-Type', 'application/json');
         }
         return App::NoContentResponse();
+    }
+
+    public function OnPost()
+    {
+        global $Link, $DB_TABLE;
+        $Data = $this->GetServerRequest()->getParsedBody();
+        $AuthResult = $this->AuthorizeRequest();
+        if (!$AuthResult) {
+            return App::UnauthorizedResponse();
+        }
+        try {
+            // Validate Required Fields
+            $RequiredFields = [
+                'fullName', 'gender', 'birthday', 'nationalId', 'tel', 'mobile', 'email',
+                'address', 'bloodType', 'married', 'height', 'weight','emergencyContacts'
+            ];
+            $InvalidFields = [];
+            foreach ($RequiredFields as $Field) {
+                if (empty($Data[$Field])) {
+                    $InvalidFields[] = $Field;
+                }
+            }
+            if (count($InvalidFields) > 0) {
+                throw new \Exception('Invalid Fields: ' . implode(',', $InvalidFields));
+            }
+            // Purify Data
+            $Data = Utility::SafeScript($Data);
+            $Data = Utility::SafeSQL($Data, $Link);
+            $Data['UserID'] = Utility::GetDBSID();
+            $Patient = PatientDetail::fromArray($Data);
+            // Check Duplicate
+            $DuplicateFields = $this->CheckDuplicate($Patient);
+            if (count($DuplicateFields) > 0) {
+                throw new \Exception('Duplicate Patient: ' . implode(', ', $DuplicateFields));
+            }
+            // Create Patient
+            $Mod = new DBSMOD_User($Link, $DB_TABLE);
+            $CreateResult = $Mod->Create($Patient->toDBArray());
+            if ($CreateResult === false) {
+                throw new \Exception('Create Patient Failed: ' . $Mod->Error->getMessage());
+            }
+            return App::NoContentResponse();
+        } catch (\Throwable $th) {
+            $ResponseBody = $this->Psr17Factory->createStream(json_encode(['message' => $th->getMessage()]));
+            return $this->Psr17Factory->createResponse(400)->withBody($ResponseBody)
+                ->withHeader('Content-Type', 'application/json');
+        }
+    }
+
+    public function OnPut()
+    {
+        global $Link, $DB_TABLE;
+        $Data = $this->GetServerRequest()->getParsedBody();
+        $AuthResult = $this->AuthorizeRequest();
+        if (!$AuthResult) {
+            return App::UnauthorizedResponse();
+        }
+        try {
+            // Purify Data
+            $Data = Utility::SafeScript($Data);
+            $Data = Utility::SafeSQL($Data, $Link);
+            $PatientId = $this->GetServerRequest()->getQueryParams()['_id'];
+            $OriData = $this->QueryDetail($PatientId);
+            $Patient = PatientDetail::fromArray($OriData);
+            foreach ($Data as $Key => $Value) {
+                $Patient->$Key = $Value;
+            }
+            // Check Duplicate
+            $DuplicateFields = $this->CheckDuplicate($Patient, $PatientId);
+            if (count($DuplicateFields) > 0) {
+                throw new \Exception('Duplicate Patient: ' . implode(', ', $DuplicateFields));
+            }
+            // Update Patient
+            $Mod = new DBSMOD_User($Link, $DB_TABLE);
+            $ValuePairs = $Patient->toDBArray(array_keys($Data));
+            $UpdateResult = $Mod->Update($PatientId, $ValuePairs);
+            if ($UpdateResult === false) {
+                throw new \Exception('Update Patient Failed: ' . $Mod->Error->getMessage());
+            }
+            return App::NoContentResponse();
+        } catch (\Throwable $th) {
+            $ResponseBody = $this->Psr17Factory->createStream(json_encode(['message' => $th->getMessage()]));
+            return $this->Psr17Factory->createResponse(400)->withBody($ResponseBody)
+                ->withHeader('Content-Type', 'application/json');
+        }
     }
 
     public function QueryList($Data) : array
@@ -90,5 +179,40 @@ class PatientRepo extends RestfulApp
         }
         $Patient = PatientDetail::fromArray($Patient[0]);
         return $Patient->toArray();
+    }
+
+    public function CheckDuplicate($Patient, $ID = null)
+    {
+        global $Link, $DB_TABLE, $User_Tb;
+        $Act = new DBSAction($Link, $DB_TABLE, $User_Tb);
+        $Act->AddSelect(['IDTNO', 'TEL1', 'MobileTEL1', 'EML1']);
+        $Act->AddPreCondition('IDTNO = :nationalId', ['nationalId' => $Patient->nationalId], 'or');
+        $Act->AddPreCondition('TEL1 = :tel', ['tel' => $Patient->tel], 'or');
+        $Act->AddPreCondition('MobileTEL1 = :mobile', ['mobile' => $Patient->mobile], 'or');
+        $Act->AddPreCondition('EML1 = :email', ['email' => $Patient->email], 'or');
+        if (isset($ID)) {
+            $Act->AddPreCondition('UserID != :id', ['id' => $ID], 'and');
+        }
+        $Act->RenderSQL('_SELECT');
+        $DuplicateUsers = $Act->ExecuteSQL();
+        $DuplicateFields = [];
+        if ($DuplicateUsers !== false && count($DuplicateUsers) > 0) {
+            foreach ($DuplicateUsers as $User) {
+                if ($User['TEL1'] === $Patient->tel) {
+                    $DuplicateFields[] = 'tel=' . $Patient->tel;
+                }
+                if ($User['MobileTEL1'] === $Patient->mobile) {
+                    $DuplicateFields[] = 'mobile=' . $Patient->mobile;
+                }
+                if ($User['EML1'] === $Patient->email) {
+                    $DuplicateFields[] = 'email=' . $Patient->email;
+                }
+                if ($User['IDTNO'] === $Patient->nationalId) {
+                    $DuplicateFields[] = 'nationalId=' . $Patient->nationalId;
+                }
+            }
+            $DuplicateFields = array_unique($DuplicateFields);
+        }
+        return $DuplicateFields;
     }
 }
