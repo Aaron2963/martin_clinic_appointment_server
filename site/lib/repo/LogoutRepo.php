@@ -6,7 +6,7 @@ use Lin\AppPhp\Server\App;
 use Lin\AppPhp\Server\RestfulApp;
 use MISA\DBSMOD\DBSMOD_OAuthToken;
 
-class Logout extends RestfulApp
+class LogoutRepo extends RestfulApp
 {
     public function OnPost()
     {

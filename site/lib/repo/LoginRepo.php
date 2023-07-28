@@ -7,7 +7,7 @@ use MISA\DBSMOD\DBSMOD_OAuthToken;
 use MISA\DBSMOD\DBSMOD_User;
 use App\Model\User;
 
-class Login extends RestfulApp
+class LoginRepo extends RestfulApp
 {
     public function OnPost()
     {
