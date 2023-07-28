@@ -7,11 +7,11 @@ $uri = explode('#', $uri)[0];
 $uri = trim($uri, '/');
 $uri = explode('/', $uri);
 $resource = $uri[0];
-$args = [];
+$URI_ARGUMENTS = [];
 for ($i = 0; $i < count($uri); $i++) {
     if ($uri[$i] === 'api') {
         $resource = $uri[$i + 1];
-        $args = array_slice($uri, $i + 2);
+        $URI_ARGUMENTS = array_slice($uri, $i + 2);
         break;
     }
 }

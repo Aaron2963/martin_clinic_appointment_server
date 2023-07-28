@@ -17,8 +17,10 @@ trait DataTransferObject
         $class = get_called_class();
         $data = [];
         foreach ($array as $key => $value) {
-            $key = lcfirst($key);
-            $key = str_replace('ID', 'Id', $key);
+            if (preg_match('/^[A-Z][a-z]/', $key)) {
+                $key = lcfirst($key);
+            }
+            $key = preg_replace('/ID$/', 'Id', $key);
             $data[$key] = $value;
         }
         $instance = new $class($data);

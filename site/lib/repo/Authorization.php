@@ -2,15 +2,18 @@
 
 namespace App\Repo;
 
-use Lin\AppPhp\Authorization\AuthorizationInterface;
-use MISA\DBSMOD\DBSMOD_OAuthToken;
+use Lin\AppPhp\Authorization\OAuthAuthorization;
 
-class Authorization implements AuthorizationInterface
+class Authorization extends OAuthAuthorization
 {
-    public function Authorize($Token, $ResourceScopes = [])
+    public function __construct()
     {
-        global $Link, $DB_TABLE, $JWT_PUBLIC;
-        $Mod = new DBSMOD_OAuthToken($Link, $DB_TABLE);
-        return $Mod->CheckToken($Token, $JWT_PUBLIC) !== false;
+        global $JWT_PUBLIC;
+        parent::__construct($JWT_PUBLIC);
+    }
+
+    protected function IsTokenRevoked($JTI)
+    {
+        return false;
     }
 }
