@@ -16,7 +16,7 @@ class Patient
 
     public function __construct(array $data)
     {
-        $this->patientId = $data['patientId'];
+        $this->patientId = $data['patientId'] ?? $data['userId'];
         $this->fullName = $data['fullName'];
         if (in_array($data['gender'], ['male', 'female'])) {
             $this->gender = $data['gender'];
