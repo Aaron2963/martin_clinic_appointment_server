@@ -31,7 +31,7 @@ class Appointment
         $this->clinic = Clinic::fromArray($array['clinic']);
         $this->department = Department::fromArray($array['department']);
         $this->serialNoInTimeShift = $array['serialNoInTimeShift'];
-        $this->note = $array['note'];
+        $this->note = $array['note'] ?? '';
         if (in_array($array['status'], ['pending', 'confirmed', 'cancelled', 'processing', 'completed'])) {
             $this->status = $array['status'];
         } else {
@@ -46,21 +46,48 @@ class Appointment
         } else {
             throw new \Exception("Invalid appiontment shift: {$array['shift']}");
         }
-        $this->date = new DateTime($array['date']);
-        if ($this->date === false) {
+
+        try {
+            $this->date = (new DateTime($array['date']))->format('Y-m-d H:i:s');
+        } catch (\Throwable $th) {
             throw new \Exception("Invalid appiontment date: {$array['date']}");
         }
-        $this->createAt = new DateTime($array['createAt']);
-        if ($this->createAt === false) {
+
+        try {
+            $this->createAt = (new DateTime($array['createAt']))->format('Y-m-d H:i:s');
+        } catch (\Throwable $th) {
             throw new \Exception("Invalid appiontment createAt: {$array['createAt']}");
         }
-        $this->confirmeAt = new DateTime($array['confirmeAt']);
-        if ($this->confirmeAt === false) {
+
+        try {
+            $this->confirmeAt = (new DateTime($array['confirmeAt'] ?? 'nodate'))->format('Y-m-d H:i:s');
+        } catch (\Throwable $th) {
             $this->confirmeAt = null;
         }
-        $this->cancelAt = new DateTime($array['cancelAt']);
-        if ($this->cancelAt === false) {
+
+        try {
+            $this->cancelAt = (new DateTime($array['cancelAt'] ?? 'nodate'))->format('Y-m-d H:i:s');
+        } catch (\Throwable $th) {
             $this->cancelAt = null;
         }
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'appointmentId' => $this->appointmentId,
+            'patient' => $this->patient->toArray(),
+            'physician' => $this->physician->toArray(),
+            'clinic' => $this->clinic->toArray(),
+            'department' => $this->department->toArray(),
+            'status' => $this->status,
+            'serialNoInTimeShift' => $this->serialNoInTimeShift,
+            'note' => $this->note,
+            'date' => $this->date,
+            'shift' => $this->shift,
+            'createAt' => $this->createAt,
+            'confirmeAt' => $this->confirmeAt,
+            'cancelAt' => $this->cancelAt,
+        ];
     }
 }

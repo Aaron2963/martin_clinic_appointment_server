@@ -33,7 +33,6 @@ class PatientRepo extends RestfulApp
             return $this->Psr17Factory->createResponse(200)->withBody($ResponseBody)
                 ->withHeader('Content-Type', 'application/json');
         }
-        return App::NoContentResponse();
     }
 
     public function OnPost()
