@@ -225,8 +225,8 @@ class AppointmentRepo extends RestfulApp
             'date' => 'StartDateTime',
             'shift' => 'TimeShift',
             'createAt' => 'ApplyDateTime',
-            // 'confirmAt' => 'ConfirmDateTime',  // 資料庫沒有這個欄位
-            // 'cancelAt' => 'CancelDateTime',  // 資料庫沒有這個欄位
+            'confirmAt' => 'ArriveDateTime',
+            'cancelAt' => 'CancelDateTime',
         ]);
         $Act->AddLimit($Data['offset'] ?? 0, $Data['limit'] ?? 10);
         if (isset($Data['patientId'])) {
@@ -314,8 +314,8 @@ class AppointmentRepo extends RestfulApp
             'date' => 'StartDateTime',
             'shift' => 'TimeShift',
             'createAt' => 'ApplyDateTime',
-            // 'confirmAt' => 'ConfirmDateTime',  // 資料庫沒有這個欄位
-            // 'cancelAt' => 'CancelDateTime',  // 資料庫沒有這個欄位
+            'confirmAt' => 'ArriveDateTime',
+            'cancelAt' => 'CancelDateTime',
         ]);
         $Act->AddPreCondition("AppointmentID = :id", ['id' => $ID]);
         $Act->RenderSQL('_SELECT');
@@ -359,32 +359,35 @@ class AppointmentRepo extends RestfulApp
 
     public function UpdateStatus(string $ApptID, string $Status)
     {
-        global $Link, $DB_TABLE;
+        global $Link, $DB_TABLE, $NowDateTime;
         $ApptMod = new DBSMOD_Appointment($Link, $DB_TABLE);
         $Appt = $ApptMod->Select($ApptID, ['StatusFlag']);
-        $Flag = $Appt['StatusFlag'];
+        $Data = ['StatusFlag' => $Appt['StatusFlag']];
         switch ($Status) {
             case 'confirmed':
-                $Flag = $ApptMod->WriteFlag($Flag, 0, 'C');
-                $Flag = $ApptMod->WriteFlag($Flag, 1, '-');
-                $Flag = $ApptMod->WriteFlag($Flag, 2, 'C');
-                $Flag = $ApptMod->WriteFlag($Flag, 3, '-');
+                $Data['StatusFlag'] = $ApptMod->WriteFlag($Data['StatusFlag'], 0, 'C');
+                $Data['StatusFlag'] = $ApptMod->WriteFlag($Data['StatusFlag'], 1, '-');
+                $Data['StatusFlag'] = $ApptMod->WriteFlag($Data['StatusFlag'], 2, 'C');
+                $Data['StatusFlag'] = $ApptMod->WriteFlag($Data['StatusFlag'], 3, '-');
+                $Data['ArriveDateTime'] = $NowDateTime;
                 break;
             case 'completed':
-                $Flag = $ApptMod->WriteFlag($Flag, 0, 'C');
-                $Flag = $ApptMod->WriteFlag($Flag, 1, '-');
-                $Flag = $ApptMod->WriteFlag($Flag, 2, 'C');
-                $Flag = $ApptMod->WriteFlag($Flag, 3, 'C');
+                $Data['StatusFlag'] = $ApptMod->WriteFlag($Data['StatusFlag'], 0, 'C');
+                $Data['StatusFlag'] = $ApptMod->WriteFlag($Data['StatusFlag'], 1, '-');
+                $Data['StatusFlag'] = $ApptMod->WriteFlag($Data['StatusFlag'], 2, 'C');
+                $Data['StatusFlag'] = $ApptMod->WriteFlag($Data['StatusFlag'], 3, 'C');
+                $Data['CompleteDateTime'] = $NowDateTime;
                 break;
             case 'cancelled':
-                $Flag = $ApptMod->WriteFlag($Flag, 1, 'C');
+                $Data['StatusFlag'] = $ApptMod->WriteFlag($Data['StatusFlag'], 1, 'C');
+                $Data['CancelDateTime'] = $NowDateTime;
                 break;
             case 'processing':
-                $Flag = $ApptMod->WriteFlag($Flag, 1, '-');
-                $Flag = $ApptMod->WriteFlag($Flag, 3, 'W');
+                $Data['StatusFlag'] = $ApptMod->WriteFlag($Data['StatusFlag'], 1, '-');
+                $Data['StatusFlag'] = $ApptMod->WriteFlag($Data['StatusFlag'], 3, 'W');
                 break;
         }
-        $UpdateResult = $ApptMod->Update($ApptID, ['StatusFlag' => $Flag]);
+        $UpdateResult = $ApptMod->Update($ApptID, $Data);
         if ($UpdateResult === false) {
             throw new \Exception('Update Appointment Status Failed: ' . $ApptMod->Error->getMessage());
         }
