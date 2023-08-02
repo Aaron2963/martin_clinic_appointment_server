@@ -2,6 +2,7 @@
 
 namespace App\Repo;
 
+use Lin\AppPhp\Server\App;
 use Lin\AppPhp\Server\RestfulApp;
 use MISA\DBSMOD\DBSMOD_OAuthToken;
 use MISA\DBSMOD\DBSMOD_User;
@@ -32,16 +33,12 @@ class LoginRepo extends RestfulApp
                 throw new \Exception('Create token failed: ' . $Token->Error->getMessage());
             }
             $UserObj = User::fromArray($User);
-            $ResponseBody = $this->Psr17Factory->createStream(json_encode([
+            return App::JsonResponse([
                 'token' => $Jwt,
                 'user' => $UserObj->toArray(),
-            ]));
-            return $this->Psr17Factory->createResponse(200)->withBody($ResponseBody)->withHeader('Content-Type', 'application/json');
+            ]);
         } catch (\Throwable $th) {
-            $ResponseBody = $this->Psr17Factory->createStream(json_encode([
-                'message' => $th->getMessage()
-            ]));
-            return $this->Psr17Factory->createResponse(401)->withBody($ResponseBody)->withHeader('Content-Type', 'application/json');
+            return App::JsonResponse(['message' => $th->getMessage()], 401);
         }
     }
 
@@ -58,15 +55,9 @@ class LoginRepo extends RestfulApp
             }
             $User = $ModUser->Select($Result->GetSUB(), ['UserID','FullName','LoginName']);
             $UserObj = User::fromArray($User);
-            $ResponseBody = $this->Psr17Factory->createStream(json_encode([
-                'user' => $UserObj->toArray(),
-            ]));
-            return $this->Psr17Factory->createResponse(200)->withBody($ResponseBody)->withHeader('Content-Type', 'application/json');
+            return App::JsonResponse(['user' => $UserObj->toArray()]);
         } catch (\Throwable $th) {
-            $ResponseBody = $this->Psr17Factory->createStream(json_encode([
-                'message' => $th->getMessage()
-            ]));
-            return $this->Psr17Factory->createResponse(401)->withBody($ResponseBody)->withHeader('Content-Type', 'application/json');
+            return App::JsonResponse(['message' => $th->getMessage()], 401);
         }
     }
 }

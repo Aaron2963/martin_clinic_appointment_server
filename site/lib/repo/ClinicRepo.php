@@ -52,18 +52,12 @@ class ClinicRepo extends RestfulApp
                 $Obj = Clinic::fromArray($Clinic);
                 return $Obj->toArray();
             }, $Clinics);
-            $ResponseBody = $this->Psr17Factory->createStream(json_encode([
+            return App::JsonResponse([
                 'total' => (int) $Count,
                 'data' => $Clinics,
-            ]));
-            return $this->Psr17Factory->createResponse(200)->withBody($ResponseBody)
-                ->withHeader('Content-Type', 'application/json');
+            ]);
         } catch (\Throwable $th) {
-            $ResponseBody = $this->Psr17Factory->createStream(json_encode([
-                'message' => $th->getMessage()
-            ]));
-            return $this->Psr17Factory->createResponse(400)->withBody($ResponseBody)
-                ->withHeader('Content-Type', 'application/json');
+            return App::JsonResponse(['message' => $th->getMessage()], 400);
         }
     }
 }

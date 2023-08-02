@@ -21,10 +21,7 @@ class LogoutRepo extends RestfulApp
             $Mod->DeleteToken($Token, $JWT_PUBLIC);
             return App::NoContentResponse();
         } catch (\Throwable $th) {
-            $ResponseBody = $this->Psr17Factory->createStream(json_encode([
-                'message' => $th->getMessage()
-            ]));
-            return $this->Psr17Factory->createResponse(401)->withBody($ResponseBody)->withHeader('Content-Type', 'application/json');
+            return App::JsonResponse(['message' => $th->getMessage()], 401);
         }
     }
 }

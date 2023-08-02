@@ -17,6 +17,6 @@
         "dearsoft-com/dbsmod": "dev-main",
         "vlucas/phpdotenv": "^5.5",
         "firebase/php-jwt": "^6.8",
-        "aaron-lin/app-php": "^0.3.2"
+        "aaron-lin/app-php": "^0.4.0"
     }
 }

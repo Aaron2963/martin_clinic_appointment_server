@@ -21,17 +21,13 @@ class PatientRepo extends RestfulApp
         }
         if (empty($Data['_id'])) {
             $List = $this->QueryList($Data);
-            $ResponseBody = $this->Psr17Factory->createStream(json_encode($List));
-            return $this->Psr17Factory->createResponse(200)->withBody($ResponseBody)
-                ->withHeader('Content-Type', 'application/json');
+            return App::JsonResponse($List);
         } else {
             $Patient = $this->QueryDetail($Data['_id']);
             if ($Patient === null) {
                 return $this->Psr17Factory->createResponse(404);
             }
-            $ResponseBody = $this->Psr17Factory->createStream(json_encode($Patient));
-            return $this->Psr17Factory->createResponse(200)->withBody($ResponseBody)
-                ->withHeader('Content-Type', 'application/json');
+            return App::JsonResponse($Patient);
         }
     }
 
@@ -76,9 +72,7 @@ class PatientRepo extends RestfulApp
             }
             return App::NoContentResponse();
         } catch (\Throwable $th) {
-            $ResponseBody = $this->Psr17Factory->createStream(json_encode(['message' => $th->getMessage()]));
-            return $this->Psr17Factory->createResponse(400)->withBody($ResponseBody)
-                ->withHeader('Content-Type', 'application/json');
+            return App::JsonResponse(['message' => $th->getMessage()], 400);
         }
     }
 
@@ -114,9 +108,7 @@ class PatientRepo extends RestfulApp
             }
             return App::NoContentResponse();
         } catch (\Throwable $th) {
-            $ResponseBody = $this->Psr17Factory->createStream(json_encode(['message' => $th->getMessage()]));
-            return $this->Psr17Factory->createResponse(400)->withBody($ResponseBody)
-                ->withHeader('Content-Type', 'application/json');
+            return App::JsonResponse(['message' => $th->getMessage()], 400);
         }
     }
 
@@ -131,7 +123,7 @@ class PatientRepo extends RestfulApp
             'birthday' => 'Birthday',
         ]);
         if (!empty($Data['search'])) {
-            $Act->AddPreCondition("concat(FullName,Birthday,TEL1,MobileTEL1) like concat('%',:search,'%')", ['search' => $Data['search']], 'or');
+            $Act->AddPreCondition("concat(FullName,Birthday,REPLACE(TEL1,'-',''),MobileTEL1) like concat('%',:search,'%')", ['search' => $Data['search']], 'or');
         }
         $Act->AddLimit($Data['offset'] ?? 0, $Data['limit'] ?? 10);
         $Act->AddOrder('CreateDateTime', 'DESC');

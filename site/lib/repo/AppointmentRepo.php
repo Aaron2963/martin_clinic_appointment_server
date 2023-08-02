@@ -21,17 +21,13 @@ class AppointmentRepo extends RestfulApp
         }
         if (empty($Data['_id'])) {
             $List = $this->QueryList($Data);
-            $ResponseBody = $this->Psr17Factory->createStream(json_encode($List));
-            return $this->Psr17Factory->createResponse(200)->withBody($ResponseBody)
-                ->withHeader('Content-Type', 'application/json');
+            return App::JsonResponse($List);
         } else {
             $Appt = $this->QueryDetail($Data['_id']);
             if ($Appt === null) {
                 return $this->Psr17Factory->createResponse(404);
             }
-            $ResponseBody = $this->Psr17Factory->createStream(json_encode($Appt));
-            return $this->Psr17Factory->createResponse(200)->withBody($ResponseBody)
-                ->withHeader('Content-Type', 'application/json');
+            return App::JsonResponse($Appt);
         }
     }
 
