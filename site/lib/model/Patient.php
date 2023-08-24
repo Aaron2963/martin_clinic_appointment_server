@@ -13,6 +13,7 @@ class Patient
     public string $fullName;
     public string $gender;
     public ?string $birthday;
+    static public string $groupId = '0s0v8xvcclg2o1ra';
 
     public function __construct(array $data)
     {

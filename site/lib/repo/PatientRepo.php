@@ -127,6 +127,7 @@ class PatientRepo extends RestfulApp
         }
         $Act->AddLimit($Data['offset'] ?? 0, $Data['limit'] ?? 10);
         $Act->AddOrder('CreateDateTime', 'DESC');
+        $Act->AddCondition("ClientPMSGRPID = '" . Patient::$groupId . "'");
         $Act->RenderSQL('_SELECT');
         $List = $Act->ExecuteSQL();
         $Total = $Act->Count();

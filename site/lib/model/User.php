@@ -11,6 +11,7 @@ class User
     public string $userId;
     public string $loginName;
     public string $fullName;
+    static public string $groupId = '0s0wsm4a1gmmwe03';
 
     public function __construct(array $data)
     {

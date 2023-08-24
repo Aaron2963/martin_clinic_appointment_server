@@ -10,6 +10,7 @@ class Physician
 
     public string $physicianId;
     public string $fullName;
+    static public string $groupId = '0s0v8xveildc7n6d';
 
     public function __construct(array $data)
     {
