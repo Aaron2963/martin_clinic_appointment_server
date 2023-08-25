@@ -43,7 +43,7 @@ class PatientRepo extends RestfulApp
             // Validate Required Fields
             $RequiredFields = [
                 'fullName', 'gender', 'birthday', 'nationalId', 'tel', 'mobile', 'email',
-                'address', 'bloodType', 'married', 'height', 'weight','emergencyContacts'
+                'address', 'bloodType', 'married', 'height', 'weight', 'emergencyContacts'
             ];
             $InvalidFields = [];
             foreach ($RequiredFields as $Field) {
@@ -112,7 +112,7 @@ class PatientRepo extends RestfulApp
         }
     }
 
-    public function QueryList($Data) : array
+    public function QueryList($Data): array
     {
         global $Link, $DB_TABLE, $User_Tb;
         $Act = new DBSAction($Link, $DB_TABLE, $User_Tb);
@@ -144,7 +144,7 @@ class PatientRepo extends RestfulApp
         ];
     }
 
-    public function QueryDetail($ID) : ?array
+    public function QueryDetail($ID): ?array
     {
         global $Link, $DB_TABLE, $User_Tb;
         $Act = new DBSAction($Link, $DB_TABLE, $User_Tb);
@@ -162,6 +162,7 @@ class PatientRepo extends RestfulApp
             'married' => "Marriage",
             'height' => 'Height',
             'weight' => 'Weight',
+            'emergencyContacts' => 'ContactSet',
         ]);
         $Act->AddPreCondition('UserID = :id', ['id' => $ID]);
         $Act->RenderSQL('_SELECT');
@@ -169,6 +170,7 @@ class PatientRepo extends RestfulApp
         if (!is_array($Patient)) {
             return null;
         }
+        $Patient[0]['emergencyContacts'] = json_decode($Patient[0]['emergencyContacts'], true);
         $Patient = PatientDetail::fromArray($Patient[0]);
         return $Patient->toArray();
     }

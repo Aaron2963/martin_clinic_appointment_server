@@ -13,10 +13,6 @@ class ClinicRepo extends RestfulApp
     {
         global $Link, $DB_TABLE, $CUSIFO_Tb, $DPT_Tb, $RT_CUS_DPT_Tb;
         $Data = $this->GetServerRequest()->getQueryParams();
-        $AuthResult = $this->AuthorizeRequest();
-        if (!$AuthResult) {
-            return App::UnauthorizedResponse();
-        }
         try {
             $Offset = $Data['offset'] ?? 0;
             $Limit = $Data['limit'] ?? 10;

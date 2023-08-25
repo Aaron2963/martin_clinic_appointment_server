@@ -27,6 +27,7 @@ class LoginRepo extends RestfulApp
             }
             $User = $ModUser->Select($Result['UserID'], ['UserID','FullName','LoginName']);
             $Mod = new DBSMOD_OAuthToken($Link, $DB_TABLE);
+            $Mod->ExpireTime = 60 * 60 * 24 * 30;
             $Token = $Mod->CreateToken($User['UserID'], $JWT_SECRET);
             $Jwt = $Token->ToString($JWT_SECRET);
             if ($Jwt === false) {

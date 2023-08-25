@@ -63,7 +63,7 @@ class PatientDetail extends Patient
         }
     }
 
-    public function toDBArray(array $fields = ['patientId', 'fullName', 'gender', 'birthday', 'nationalId', 'tel', 'mobile', 'mobile', 'email', 'address', 'bloodType', 'emergencyContacts']) : array
+    public function toDBArray(array $fields = ['patientId', 'fullName', 'gender', 'birthday', 'nationalId', 'tel', 'mobile', 'mobile', 'email', 'address', 'bloodType', 'emergencyContacts']): array
     {
         $mapping = [
             'patientId' => 'UserID',

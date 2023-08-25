@@ -241,7 +241,11 @@ class AppointmentRepo extends RestfulApp
             $Act->AddCondition("DPTID = '{$Data['departmentId']}'", 'and');
         }
         if (isset($Data['status'])) {
-            $Act->AddCondition($this->GetStatusFlagExpression() . " = '{$Data['status']}'", 'and');
+            $StatusArray = explode(',', $Data['status']);
+            $StatusConditions = array_map(function($Status) {
+                return $this->GetStatusFlagExpression() . " = '$Status'";
+            }, $StatusArray);
+            $Act->AddCondition(implode(' OR ', $StatusConditions), 'and');
         }
         if (isset($Data['startAt'])) {
             $Act->AddCondition("StartDateTime >= {$Data['startAt']}", 'and');
@@ -319,7 +323,7 @@ class AppointmentRepo extends RestfulApp
         if ($Act->Error != null) {
             throw $Act->Error;
         }
-        if (count($Rows) === 0) {
+        if (!is_array($Rows) || count($Rows) === 0) {
             return null;
         }
         $Row = $Rows[0];
